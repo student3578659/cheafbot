@@ -247,19 +247,3 @@ ChefBot:
 ### План меню
 
 ![Меню ChefBot](docs/screenshots/menu.jpg)
-
-## Демонстрація
-
-Застосунок можна запустити локально командою:
-
-```bash
-streamlit run app.py
-```
-
-Також його можна задеплоїти на Streamlit Community Cloud. Для деплою потрібно вказати:
-
-```text
-Repository: student3578659/cheafbot
-Branch: main
-Main file path: app.py
-```
