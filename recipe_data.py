@@ -1,8 +1,13 @@
 from __future__ import annotations
 
+# recipe_data.py — Дані та функції для підбору рецептів
+
 from dataclasses import dataclass
 
 
+# ============================================================
+# СПИСОК ДОСТУПНИХ ІНГРЕДІЄНТІВ
+# ============================================================
 AVAILABLE_INGREDIENTS = [
     "курка",
     "яловичина",
@@ -31,10 +36,10 @@ AVAILABLE_INGREDIENTS = [
     "лимон",
 ]
 
-MEAT_AND_FISH = {"курка", "яловичина", "риба"}
-GLUTEN_INGREDIENTS = {"макарони"}
 
-
+# ============================================================
+# МОДЕЛЬ РЕЦЕПТА
+# ============================================================
 @dataclass(frozen=True)
 class Recipe:
     name: str
@@ -47,6 +52,9 @@ class Recipe:
     image_url: str
 
 
+# ============================================================
+# БАЗА РЕЦЕПТІВ
+# ============================================================
 RECIPE_BOOK = [
     Recipe(
         name="Курка з рисом і броколі",
@@ -135,6 +143,9 @@ RECIPE_BOOK = [
 ]
 
 
+# ============================================================
+# ДОПОМІЖНІ ФУНКЦІЇ
+# ============================================================
 def normalize_ingredient(value: str) -> str:
     return value.strip().lower()
 
@@ -162,6 +173,9 @@ def recipe_to_dict(recipe: Recipe, match_score: int = 0) -> dict[str, object]:
     }
 
 
+# ============================================================
+# ПІДБІР РЕЦЕПТІВ
+# ============================================================
 def suggest_recipes_for_items(
     fridge_items: list[str],
     vegetarian: bool = False,
@@ -193,6 +207,9 @@ def get_recipe_rank(item: tuple[int, int, Recipe]) -> tuple[int, int, int]:
     return score, matched_count, -len(recipe.ingredients)
 
 
+# ============================================================
+# СПИСОК ПОКУПОК ТА СТАТИСТИКА
+# ============================================================
 def build_shopping_list(recipes: list[dict[str, object]], fridge_items: list[str]) -> list[str]:
     fridge = set(normalize_ingredients(fridge_items))
     missing = []

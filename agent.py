@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+# agent.py — Крок 6: LangGraph-агент з інструментами для ChefBot
+
 import json
 import os
 import re
@@ -15,9 +17,15 @@ from recipe_data import normalize_ingredients, suggest_recipes_for_items
 
 load_dotenv()
 
+# ============================================================
+# КОНСТАНТИ
+# ============================================================
 FRIDGE_STATE: dict[str, list[str]] = {}
 
 
+# ============================================================
+# СХЕМА РЕЗУЛЬТАТУ АГЕНТА
+# ============================================================
 class AgentResult(TypedDict):
     response: str
     fridge_items: list[str]
@@ -25,6 +33,9 @@ class AgentResult(TypedDict):
     used_langgraph: bool
 
 
+# ============================================================
+# ІНСТРУМЕНТИ АГЕНТА
+# ============================================================
 def set_fridge_items(items: list[str], thread_id: str = "default") -> str:
     normalized = normalize_ingredients(items)
     FRIDGE_STATE[thread_id] = normalized
@@ -67,6 +78,9 @@ def suggest_recipes(
     return "\n".join(lines)
 
 
+# ============================================================
+# ЗАПУСК АГЕНТА
+# ============================================================
 def run_cooking_agent(
     user_message: str,
     thread_id: str,
@@ -97,6 +111,9 @@ def run_cooking_agent(
     return run_local_agent(user_message, thread_id, vegetarian, gluten_free)
 
 
+# ============================================================
+# LANGGRAPH-АГЕНТ
+# ============================================================
 def run_langgraph_agent(
     user_message: str,
     thread_id: str,
@@ -182,6 +199,9 @@ def run_langgraph_agent(
     }
 
 
+# ============================================================
+# ЛОКАЛЬНИЙ РЕЖИМ БЕЗ API-КЛЮЧА
+# ============================================================
 def run_local_agent(
     user_message: str,
     thread_id: str,
@@ -238,6 +258,9 @@ def build_recipe_response(
     return "\n".join(lines)
 
 
+# ============================================================
+# ДОПОМІЖНІ ФУНКЦІЇ
+# ============================================================
 def extract_ingredients_from_text(text: str) -> list[str]:
     known_ingredients = {
         "курка",

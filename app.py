@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+# app.py — Крок 7: Кулінарний помічник ChefBot
+
 import json
 import os
 import uuid
@@ -24,6 +26,9 @@ from recipe_data import (
 
 load_dotenv()
 
+# ============================================================
+# КОНСТАНТИ
+# ============================================================
 DEFAULT_SYSTEM_PROMPT = (
     "Ти ChefBot, кулінарний помічник. Допомагай підібрати рецепти з наявних "
     "інгредієнтів, враховуй дієтичні обмеження, пропонуй короткі кроки "
@@ -31,7 +36,11 @@ DEFAULT_SYSTEM_PROMPT = (
 )
 
 
+# ============================================================
+# ГОЛОВНА ФУНКЦІЯ ЗАСТОСУНКУ
+# ============================================================
 def main() -> None:
+    # Має бути першою командою Streamlit у скрипті
     st.set_page_config(
         page_title="ChefBot",
         page_icon="🍳",
@@ -52,6 +61,9 @@ def main() -> None:
         render_menu_planner()
 
 
+# ============================================================
+# CSS ДЛЯ КАСТОМІЗАЦІЇ (опціонально)
+# ============================================================
 def inject_styles() -> None:
     st.markdown(
         """
@@ -102,6 +114,9 @@ def inject_styles() -> None:
     )
 
 
+# ============================================================
+# ІНІЦІАЛІЗАЦІЯ СТАНУ
+# ============================================================
 def initialize_session_state() -> None:
     defaults = {
         "messages": [
@@ -128,6 +143,9 @@ def initialize_session_state() -> None:
     refresh_recipe_suggestions()
 
 
+# ============================================================
+# БІЧНА ПАНЕЛЬ
+# ============================================================
 def render_sidebar() -> None:
     with st.sidebar:
         st.header("Мій холодильник")
@@ -203,6 +221,9 @@ def render_sidebar() -> None:
         st.caption("ChefBot підбирає рецепти, веде холодильник і формує список покупок.")
 
 
+# ============================================================
+# ЗАГОЛОВОК ТА ОПИС
+# ============================================================
 def render_header() -> None:
     st.markdown(
         """
@@ -218,19 +239,29 @@ def render_header() -> None:
         st.markdown(chips, unsafe_allow_html=True)
 
 
+# ============================================================
+# ВІДОБРАЖЕННЯ ІСТОРІЇ ЧАТУ
+# ============================================================
 def render_chat() -> None:
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.write(message["content"])
 
+    # ============================================================
+    # ОБРОБКА НОВОГО ПОВІДОМЛЕННЯ
+    # ============================================================
     prompt = st.chat_input("Напишіть, що є в холодильнику або яку страву хочете")
     if not prompt:
         return
 
+    # Додаємо повідомлення користувача
     st.session_state.messages.append({"role": "user", "content": prompt})
+
+    # Відображаємо повідомлення користувача
     with st.chat_message("user"):
         st.write(prompt)
 
+    # Генеруємо відповідь зі стрімінгом
     with st.chat_message("assistant"):
         with st.spinner("ChefBot готує відповідь..."):
             if st.session_state.mode == "Агент з інструментами":
@@ -239,9 +270,13 @@ def render_chat() -> None:
             else:
                 response = st.write_stream(stream_gemini_response(prompt))
 
+    # Зберігаємо відповідь
     st.session_state.messages.append({"role": "assistant", "content": str(response)})
 
 
+# ============================================================
+# ВИКЛИК LANGGRAPH-АГЕНТА
+# ============================================================
 def handle_agent_message(prompt: str) -> str:
     restrictions = st.session_state.diet_restrictions
     result = run_cooking_agent(
@@ -259,6 +294,9 @@ def handle_agent_message(prompt: str) -> str:
     return result["response"]
 
 
+# ============================================================
+# ІНТЕГРАЦІЯ З GOOGLE GEMINI
+# ============================================================
 def stream_gemini_response(prompt: str) -> Generator[str, None, None]:
     api_key = get_secret("GOOGLE_API_KEY")
     if not api_key:
@@ -288,11 +326,15 @@ def stream_gemini_response(prompt: str) -> Generator[str, None, None]:
 
 @st.cache_resource
 def get_gemini_client(api_key: str):
+    """Створює та кешує клієнт Gemini."""
     from google import genai
 
     return genai.Client(api_key=api_key)
 
 
+# ============================================================
+# ДОПОМІЖНІ ФУНКЦІЇ ДЛЯ GEMINI
+# ============================================================
 def build_gemini_contents(prompt: str) -> list[dict[str, object]]:
     history = st.session_state.messages[-12:-1]
     contents = []
@@ -328,6 +370,9 @@ def build_local_chat_response(prompt: str) -> str:
     return "\n".join(lines)
 
 
+# ============================================================
+# СПЕЦІАЛІЗОВАНІ UI-КОМПОНЕНТИ
+# ============================================================
 def render_recipe_dashboard() -> None:
     recipes = st.session_state.suggested_recipes
     if not recipes:
@@ -356,6 +401,9 @@ def build_ingredient_options() -> list[str]:
     return options
 
 
+# ============================================================
+# КАРТКА РЕЦЕПТА
+# ============================================================
 def render_recipe_card(recipe: dict[str, object]) -> None:
     with st.container(border=True):
         image_url = str(recipe.get("image_url", ""))
@@ -373,6 +421,9 @@ def render_recipe_card(recipe: dict[str, object]) -> None:
                 st.write(f"- {step}")
 
 
+# ============================================================
+# ПЛАНУВАННЯ МЕНЮ
+# ============================================================
 def render_menu_planner() -> None:
     recipes = st.session_state.suggested_recipes
     if not recipes:
@@ -407,6 +458,9 @@ def render_menu_planner() -> None:
         )
 
 
+# ============================================================
+# СТАТИСТИКА ВИКОРИСТАННЯ
+# ============================================================
 def render_usage_stats() -> None:
     user_messages = sum(1 for message in st.session_state.messages if message["role"] == "user")
     assistant_messages = sum(1 for message in st.session_state.messages if message["role"] == "assistant")
@@ -417,6 +471,9 @@ def render_usage_stats() -> None:
     st.metric("Оцінка токенів", tokens)
 
 
+# ============================================================
+# ЕКСПОРТ ІСТОРІЇ ЧАТУ
+# ============================================================
 def render_history_download() -> None:
     payload = {
         "thread_id": st.session_state.thread_id,
@@ -432,6 +489,9 @@ def render_history_download() -> None:
     )
 
 
+# ============================================================
+# ДОПОМІЖНІ ФУНКЦІЇ
+# ============================================================
 def refresh_recipe_suggestions() -> None:
     restrictions = st.session_state.diet_restrictions
     st.session_state.suggested_recipes = suggest_recipes_for_items(
